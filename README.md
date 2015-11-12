@@ -1,0 +1,2 @@
+# bsi
+holds walkability files
