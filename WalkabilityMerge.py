@@ -9,6 +9,7 @@ import arcpy,os,sys
 import time
 from Tkinter import Tk
 from tkFileDialog import askdirectory
+import os
 
 # Note that if the attribute 'destination' in parcels exist (from maybe RTJoinFor2Maps) that the lengthy
 # queuies in 'selectDestination' can be replaced by simple check of destination attribute
@@ -100,6 +101,29 @@ def scoreParcelsShape(targetFeature,nearFeature, outputName, geoDataBaseName):
 
 #If features matched criteria write them to a new feature class
 #matchcount = int(arcpy.GetCount_management('cities_lyr').getOutput(0))
+'''
+def scoreParcelsFAST(targetFeature,nearFeature, outputName, geoDataBaseName):
+    arcpy.SpatialJoin_analysis(targetdir + "\\" + geoDataBaseName + "\\" + targetFeature,
+        targetdir + "\\" + geoDataBaseName + "\\" +nearFeature,"targetFeatureScored","#","#",field_mapping = None, match_option = "WITHIN_A_DISTANCE",2313, distance_field_name = "Dist")
+    arcpy.FeatureClassToGeodatabase_conversion(targetdir + "\\" +"targetFeatureScored.shp", geoDataBaseName)
+    arcpy.AddField_management(targetdir + "\\" + geoDataBaseName + "\\targetFeatureScored", "walkable", "TEXT")
+    expression = "getScore(!Join_Count!)"
+    codeblock = """def getScore(cnt):
+    cnt = int(cnt)
+    if cnt <= 30:
+        return 'walk1'
+    if cnt > 31 and cnt <= 70:
+        return 'walk2'
+    if cnt > 71 and cnt <= 110:
+        return 'walk3'
+    if cnt > 111 and cnt <= 135:
+        return 'walk4'
+    if cnt > 135:
+        return 'walk5'
+    else:
+        return 'walk0'"""
+    arcpy.CalculateField_management(targetdir + "\\" + geoDataBaseName + "\\targetFeatureScored", "walkable", expression,"PYTHON_9.3",codeblock)
+'''
 
 def scoreParcels(targetFeature,nearFeature, outputName, geoDataBaseName):
     targetFeature = targetFeature # + "_shp"
@@ -114,11 +138,11 @@ def scoreParcels(targetFeature,nearFeature, outputName, geoDataBaseName):
     cnt = int(cnt)
     if cnt <= 30:
         return 'walk1'
-    if cnt > 31 and cnt <= 70:
+    if cnt > 30 and cnt <= 70:
         return 'walk2'
-    if cnt > 71 and cnt <= 110:
+    if cnt > 70 and cnt <= 110:
         return 'walk3'
-    if cnt > 111 and cnt <= 135:
+    if cnt > 110 and cnt <= 135:
         return 'walk4'
     if cnt > 135:
         return 'walk5'
@@ -163,19 +187,23 @@ def promptWhetherMulticounty():
     return multicounty
 
 def cleanCounties(outdir,counties):
-    os.remove(outdir + "\\walk.gdb")
-    os.remove(outdir + "\\walkability.gdb")
     for county in  counties:
-        if os.isfile(homedir + "\\data\\" + county + "\\destination.prj"):
-            os.remove(homedir + "\\data\\" + county + "\\destination.prj")
-        if os.isfile(homedir + "\\data\\" + county + "\\destination.dbf"):
-            os.remove(homedir + "\\data\\" + county + "\\destination.dbf")
-        if os.isfile(homedir + "\\data\\" + county + "\\destination.sbn"):
-            os.remove(homedir + "\\data\\" + county + "\\destination.sbn")
-        if os.isfile(homedir + "\\data\\" + county + "\\destination.shp"):
-            os.remove(homedir + "\\data\\" + county + "\\destination.shp")
-        if os.isfile(homedir + "\\data\\" + county + "\\destination.shx"):
-            os.remove(homedir + "\\data\\" + county + "\\destination.shx")
+        if os.path.isfile(homedir + "\\data\\" + str(county) + "\\destination.prj"):
+            os.remove(homedir + "\\data\\" + str(county) + "\\destination.prj")
+        if os.path.isfile(homedir + "\\data\\" + str(county) + "\\destination.dbf"):
+            os.remove(homedir + "\\data\\" + str(county) + "\\destination.dbf")
+        if os.path.isfile(homedir + "\\data\\" + str(county) + "\\destination.sbn"):
+            os.remove(homedir + "\\data\\" + str(county) + "\\destination.sbn")
+        if os.path.isfile(homedir + "\\data\\" + str(county) + "\\destination.shp"):
+            os.remove(homedir + "\\data\\" + str(county) + "\\destination.shp")
+        if os.path.isfile(homedir + "\\data\\" + str(county) + "\\destination.shx"):
+            os.remove(homedir + "\\data\\" + str(county) + "\\destination.shx")
+        gdbfiles = os.listdir(outdir + "\\walk.gdb")
+        for gf in gdbfiles:
+                os.remove(outdir + "\\walk.gdb\\" + gf)
+        os.remove(outdir + "\\walk.gdb")
+        #os.remove(outdir + "\\walkability.gdb")
+
 
 multicounty2maps = False
 logout = None
@@ -207,8 +235,9 @@ if __name__ == '__main__':
 
     outdir = targetdir
     geoDataBaseName = "walk.gdb"
-    geoDataBaseOutput = "walkability.gdb"
+    #geoDataBaseOutput = "walkability.gdb"
     creategdb = True
+
     outputName = "walkability"
 
     # SETUP
@@ -221,23 +250,23 @@ if __name__ == '__main__':
             for gf in gdbfiles:
                 os.remove(outdir + "\\walkability.gdb\\" + gf)
             os.remove(outdir + "\\walk.gdb")
-            os.remove(outdir + "\\walkability.gdb")
-            if os.isfile(outdir + "\\destination.prj"):
+            #os.remove(outdir + "\\walkability.gdb")
+            if os.path.isfile(outdir + "\\destination.prj"):
                 os.remove(outdir + "\\destination.prj")
-            if os.isfile(outdir + "\\destination.dbf"):
+            if os.path.isfile(outdir + "\\destination.dbf"):
                 os.remove(outdir + "\\destination.dbf")
-            if os.isfile(outdir + "\\destination.sbn"):
+            if os.path.isfile(outdir + "\\destination.sbn"):
                 os.remove(outdir + "\\destination.sbn")
-            if os.isfile(outdir + "\\destination.shp"):
+            if os.path.isfile(outdir + "\\destination.shp"):
                 os.remove(outdir + "\\destination.shp")
-            if os.isfile(outdir + "\\destination.shx"):
+            if os.path.isfile(outdir + "\\destination.shx"):
                 os.remove(outdir + "\\destination.shx")
         arcpy.CreateFileGDB_management(outdir, geoDataBaseName)
-        arcpy.CreateFileGDB_management(outdir, geoDataBaseOutput)
+        #arcpy.CreateFileGDB_management(outdir, geoDataBaseOutput)
 
     workspace = targetdir #+ "/" + geoDataBaseName #"C:/Users/dev/Documents/boundarysolutions/marin/Marin.gdb"
     geoDataBasePath = targetdir + "/" + geoDataBaseName
-    geoDataBaseOutputPath = targetdir + "\\" + geoDataBaseOutput
+    #geoDataBaseOutputPath = targetdir + "\\" + geoDataBaseOutput
     arcpy.env.workspace = workspace
     logout.write('calling selectDestinations'+ '\n')
     multicounty2maps = promptWhetherMulticounty()
@@ -245,6 +274,8 @@ if __name__ == '__main__':
     outCS = arcpy.SpatialReference()
     outCS.factoryCode = 26911
     outCS.create()
+
+    fastJoin = False
 
     if multicounty2maps:
         countyFolderList = promptForFoldersForMetro()
@@ -257,11 +288,13 @@ if __name__ == '__main__':
         merged = loadAndMergeCountiesInMetro(targetdir,targetParcels,newgdbfiles)
         arcpy.env.workspace = targetdir
         outWorkspace = outdir + "\\" + geoDataBaseName
-
         arcpy.FeatureClassToGeodatabase_conversion("Parcels.shp", outWorkspace)
         #features2gdb(countyFolderList,geoDataBaseName) # may not be needd
-        bufferDestinations("metroOut","destinationsCommercialBufferedHalf",geoDataBaseName)
-        scoreParcels(targetFeatureClass,"destinationsCommercialBufferedHalf", outputName, geoDataBaseName)
+        if fastJoin:
+            pass #scoreParcelsFAST(targetFeatureClass,"metroOut", outputName, geoDataBaseName)
+        else:
+            bufferDestinations("metroOut","destinationsCommercialBufferedHalf",geoDataBaseName)
+            scoreParcels(targetFeatureClass,"destinationsCommercialBufferedHalf", outputName, geoDataBaseName)
         cleanCounties(outdir,countyFolderList)
     else:
         selectDestinations(nearParcelsList,"distinationParcels")
@@ -271,6 +304,8 @@ if __name__ == '__main__':
         bufferDestinations("distinationParcels","destinationsCommercialBufferedHalf",geoDataBaseName)
         logout.write('calling scoreParcels'+ '\n')
         scoreParcels(targetFeatureClass,"destinationsCommercialBufferedHalf", outputName, geoDataBaseName)
+
+
 
 
 
