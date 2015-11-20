@@ -5,6 +5,7 @@ __author__ = 'dev'
 # This version merges all the counties in the metro, filters out the destinations in the metro.
 # Then it bufferes all the destinations
 # Then takes then
+
 import arcpy,os,sys
 import time
 from Tkinter import Tk
@@ -18,9 +19,16 @@ def selectDestinations(countyFolders,outputName):
     #arcpy.env.workspace = arcpy.GetParameterAsText(0)
     Dir = arcpy.env.workspace
 
-    expression1 = 'NOT "STD_LAND_U" = \'RAPT\' AND NOT "STD_LAND_U" = \'RSFR\' AND NOT "STD_LAND_U" = \'RCON\' AND NOT "STD_LAND_U" = \'RCOO\' AND NOT "STD_LAND_U" = \'RDUP\' AND NOT "STD_LAND_U" = \'RMOB\' AND NOT "STD_LAND_U" = \'RMSC\' AND NOT "STD_LAND_U" = \'RQUA\' AND NOT "STD_LAND_U" = \'RSFR\' AND NOT "STD_LAND_U" = \'RTIM\' AND NOT "STD_LAND_U" = \'RTRI\' AND NOT "STD_LAND_U" = \'RMFD\''
+    #expression1 = 'NOT "STD_LAND_U" = \'RAPT\' AND NOT "STD_LAND_U" = \'RSFR\' AND NOT "STD_LAND_U" = \'RCON\' AND NOT "STD_LAND_U" = \'RCOO\' AND NOT "STD_LAND_U" = \'RDUP\' AND NOT "STD_LAND_U" = \'RMOB\' AND NOT "STD_LAND_U" = \'RMSC\' AND NOT "STD_LAND_U" = \'RQUA\' AND NOT "STD_LAND_U" = \'RSFR\' AND NOT "STD_LAND_U" = \'RTIM\' AND NOT "STD_LAND_U" = \'RTRI\' AND NOT "STD_LAND_U" = \'RMFD\''
+    expression1 = 'NOT "STD_LAND_U" LIKE \'R%\' AND NOT "STD_LAND_U" LIKE \'V%\' AND NOT "STD_LAND_U" = \'LUNK\'' \
+                  + ' AND NOT "STD_LAND_U" = \' \' AND NOT "STD_LAND_U" = \'MMSC\''\
+                  + ' AND NOT "STD_LAND_U" = \'MROA\''
     expression2 = '"IMPR_VALUE" > \'0\''
-    expression3 = '"OWNER" LIKE \'%PARK%\' OR "OWNER" LIKE \'%RECREATION%\'  OR "OWNER" LIKE \'%TOWN%\'  OR "OWNER" LIKE \'%COUNTY%\'  OR "OWNER" LIKE \'%STATE%\'  OR "OWNER" LIKE \'%DISTRICT%\' OR "OWNER" LIKE \'%SCHOOL%\'  OR "OWNER" LIKE \'%ELEMENTARY%\'  OR "OWNER" LIKE \'%MIDDLE%\'  OR "OWNER" LIKE \'%LIBRARY%\'  OR "OWNER" LIKE \'%K8 K12%\'  OR "OWNER" LIKE \'%HOSPITAL%\' OR "OWNER" LIKE \'%CIVIC%\'  OR "OWNER" LIKE \'%CLINIC%\'  OR "OWNER" LIKE \'%FACILITY%\' OR "OWNER" LIKE \'%COMMUNITY%\'  OR "OWNER" LIKE \'%PLAYGROUND%\' OR "OWNER" LIKE \'%CHURCH%\'  OR "OWNER" LIKE \'%TEMPLE%\'  OR "OWNER" LIKE \'%MOSQUE%\' OR "OWNER" LIKE \'%FOREST%\'  OR "OWNER" LIKE \'%MUNICIPAL%\' OR "OWNER" LIKE \'%UNIVERSITY%\'  OR "OWNER" LIKE \'%DAYCARE%\''
+    expression3 = '"OWNER" LIKE \'% PARK %\' OR "OWNER" LIKE \'% PARK\' OR "OWNER" LIKE \'PARK %\'   OR "OWNER" LIKE \'% RECREATION %\'  OR "OWNER" LIKE \'% RECREATION\' OR "OWNER" LIKE \'RECREATION %\'   OR "OWNER" LIKE \'% TOWN %\'  OR "OWNER" LIKE \'% TOWN\'  OR "OWNER" LIKE \'TOWN %\'  OR "OWNER" LIKE \'% COUNTY %\'  OR "OWNER" LIKE \'% COUNTY\'  OR "OWNER" LIKE \'COUNTY %\'  OR "OWNER" LIKE \'% STATE %\'  OR "OWNER" LIKE \'% STATE\'  OR "OWNER" LIKE \'STATE %\'  OR "OWNER" LIKE \'% DISTRICT %\' OR "OWNER" LIKE \'% DISTRICT\' OR "OWNER" LIKE \'DISTRICT %\' OR "OWNER" LIKE \'% SCHOOL %\' OR "OWNER" LIKE \'% SCHOOL\'  OR "OWNER" LIKE \'SCHOOL %\'   OR "OWNER" LIKE \'% ELEMENTARY %\'  OR "OWNER" LIKE \'% ELEMENTARY\' OR "OWNER" LIKE \'ELEMENTARY %\'   OR "OWNER" LIKE \'% MIDDLE %\' OR "OWNER" LIKE \'% MIDDLE\' OR "OWNER" LIKE \'MIDDLE %\'    OR "OWNER" LIKE \'% LIBRARY %\'  OR "OWNER" LIKE \'% LIBRARY\' OR "OWNER" LIKE \'LIBRARY %\'   OR "OWNER" LIKE \'% K8 K12 %\' OR "OWNER" LIKE \'% K8 K12\'  OR "OWNER" LIKE \'K8 K12 %\'   OR "OWNER" LIKE \'% HOSPITAL %\' OR "OWNER" LIKE \'% HOSPITAL\' OR "OWNER" LIKE \'HOSPITAL %\' OR "OWNER" LIKE \'% CIVIC %\' OR "OWNER" LIKE \'% CIVIC\' OR "OWNER" LIKE \'CIVIC %\'' \
+    + ' OR "OWNER" LIKE \'% FACILITY %\' OR "OWNER" LIKE \'% COMMUNITY %\'  OR "OWNER" LIKE \'% PLAYGROUND %\' OR "OWNER" LIKE \'% CHURCH %\'  OR "OWNER" LIKE \'% TEMPLE %\'  OR "OWNER" LIKE \'% MOSQUE %\' OR "OWNER" LIKE \'% FOREST %\'  OR "OWNER" LIKE \'% MUNICIPAL %\' OR "OWNER" LIKE \'% UNIVERSITY %\'  OR "OWNER" LIKE \'% DAYCARE %\'' \
+    + ' OR "OWNER" LIKE \'% FACILITY\' OR "OWNER" LIKE \'% COMMUNITY\'  OR "OWNER" LIKE \'% PLAYGROUND\' OR "OWNER" LIKE \'% CHURCH\'  OR "OWNER" LIKE \'% TEMPLE%\'  OR "OWNER" LIKE \'% MOSQUE\' OR "OWNER" LIKE \'% FOREST\'  OR "OWNER" LIKE \'% MUNICIPAL\' OR "OWNER" LIKE \'% UNIVERSITY\'  OR "OWNER" LIKE \'% DAYCARE\'' \
+    + ' OR "OWNER" LIKE \'FACILITY %\' OR "OWNER" LIKE \'COMMUNITY %\'  OR "OWNER" LIKE \'PLAYGROUND %\' OR "OWNER" LIKE \'CHURCH %\'  OR "OWNER" LIKE \'%TEMPLE %\'  OR "OWNER" LIKE \'MOSQUE %\' OR "OWNER" LIKE \'FOREST %\'  OR "OWNER" LIKE \'MUNICIPAL %\' OR "OWNER" LIKE \'UNIVERSITY %\'  OR "OWNER" LIKE \'DAYCARE %\''
+
     # Within selected features, further select based on a SQL query within the script tool
     n = 1
 
@@ -68,10 +76,11 @@ def features2gdb(countyfoldersList,outdir,geodbname):
     outWorkspace = outdir + "\\" + geodbname
     newfilelist = []
     n = 0
+
     for countyfolder in countyfoldersList:
         arcpy.env.workspace = homedir + "\\data\\" + str(countyfolder)
         for fc in arcpy.ListFeatureClasses():
-            if fc.find("distinationParcels") != -1:
+            if fc.find("destinationParcels") != -1:
                 arcpy.FeatureClassToGeodatabase_conversion(fc, outWorkspace)
                 if n > 0:
                     filename = fc.split('.')[0]
@@ -110,15 +119,15 @@ def scoreParcelsFAST(targetFeature,nearFeature, outputName, geoDataBaseName):
     expression = "getScore(!Join_Count!)"
     codeblock = """def getScore(cnt):
     cnt = int(cnt)
-    if cnt <= 30:
+    if cnt <= 31:
         return 'walk1'
-    if cnt > 31 and cnt <= 70:
+    if cnt > 31 and cnt <= 60:
         return 'walk2'
-    if cnt > 71 and cnt <= 110:
+    if cnt > 60 and cnt <= 90:
         return 'walk3'
-    if cnt > 111 and cnt <= 135:
+    if cnt > 90 and cnt <= 121:
         return 'walk4'
-    if cnt > 135:
+    if cnt > 121:
         return 'walk5'
     else:
         return 'walk0'"""
@@ -136,15 +145,15 @@ def scoreParcels(targetFeature,nearFeature, outputName, geoDataBaseName):
     expression = "getScore(!Join_Count!)"
     codeblock = """def getScore(cnt):
     cnt = int(cnt)
-    if cnt <= 30:
+    if cnt <= 40:
         return 'walk1'
-    if cnt > 30 and cnt <= 70:
+    if cnt > 40 and cnt <= 95:
         return 'walk2'
-    if cnt > 70 and cnt <= 110:
+    if cnt > 95 and cnt <= 120:
         return 'walk3'
-    if cnt > 110 and cnt <= 135:
+    if cnt > 120 and cnt <= 140:
         return 'walk4'
-    if cnt > 135:
+    if cnt > 140:
         return 'walk5'
     else:
         return 'walk0'"""
@@ -156,9 +165,9 @@ def loadAndMergeCountiesInMetro(targetdir,targetParcels,metroCountyParcels):  # 
     print "loadAndMergeCountiesInMetro"
     fieldMappings = None
     metro = targetParcels
-    metroOut = targetdir + "\\walk.gdb\\metroOut"
+    metroOut = targetdir + "\\walk2.gdb\\metroOut"
     print "merging:",metroOut
-    mcparcelsnames = [targetdir + "\\walk.gdb\\"+ mc.split('.')[0] for mc in metroCountyParcels]
+    mcparcelsnames = [targetdir + "\\walk2.gdb\\"+ mc.split('.')[0] for mc in metroCountyParcels]
     arcpy.Merge_management(mcparcelsnames, metroOut, fieldMappings)
     return metroOut
 
@@ -198,10 +207,10 @@ def cleanCounties(outdir,counties):
             os.remove(homedir + "\\data\\" + str(county) + "\\destination.shp")
         if os.path.isfile(homedir + "\\data\\" + str(county) + "\\destination.shx"):
             os.remove(homedir + "\\data\\" + str(county) + "\\destination.shx")
-        gdbfiles = os.listdir(outdir + "\\walk.gdb")
+        gdbfiles = os.listdir(outdir + "\\walk2.gdb")
         for gf in gdbfiles:
-                os.remove(outdir + "\\walk.gdb\\" + gf)
-        os.remove(outdir + "\\walk.gdb")
+                os.remove(outdir + "\\walk2.gdb\\" + gf)
+        os.remove(outdir + "\\walk2.gdb")
         #os.remove(outdir + "\\walkability.gdb")
 
 
@@ -234,7 +243,7 @@ if __name__ == '__main__':
     targetParcels = targetdir + "\\parcels.shp"
 
     outdir = targetdir
-    geoDataBaseName = "walk.gdb"
+    geoDataBaseName = "walk2.gdb"
     #geoDataBaseOutput = "walkability.gdb"
     creategdb = True
 
@@ -242,15 +251,16 @@ if __name__ == '__main__':
 
     # SETUP
     if creategdb:
-        if os.path.isdir(outdir + "\\walk.gdb"):
-            gdbfiles = os.listdir(outdir + "\\walk.gdb")
+        if os.path.isdir(outdir + "\\walk2.gdb"):
+            gdbfiles = os.listdir(outdir + "\\walk2.gdb")
             for gf in gdbfiles:
-                os.remove(outdir + "\\walk.gdb\\" + gf)
-            gdbfiles2 = os.listdir(outdir + "\\walkability.gdb")
+                os.remove(outdir + "\\walk2.gdb\\" + gf)
+            gdbfiles2 = os.listdir(outdir + "\\walkability2.gdb")
             for gf in gdbfiles:
-                os.remove(outdir + "\\walkability.gdb\\" + gf)
-            os.remove(outdir + "\\walk.gdb")
+                os.remove(outdir + "\\walkability2.gdb\\" + gf)
+            os.remove(outdir + "\\walk2.gdb")
             #os.remove(outdir + "\\walkability.gdb")
+
             if os.path.isfile(outdir + "\\destination.prj"):
                 os.remove(outdir + "\\destination.prj")
             if os.path.isfile(outdir + "\\destination.dbf"):
@@ -261,8 +271,10 @@ if __name__ == '__main__':
                 os.remove(outdir + "\\destination.shp")
             if os.path.isfile(outdir + "\\destination.shx"):
                 os.remove(outdir + "\\destination.shx")
+
         arcpy.CreateFileGDB_management(outdir, geoDataBaseName)
         #arcpy.CreateFileGDB_management(outdir, geoDataBaseOutput)
+
 
     workspace = targetdir #+ "/" + geoDataBaseName #"C:/Users/dev/Documents/boundarysolutions/marin/Marin.gdb"
     geoDataBasePath = targetdir + "/" + geoDataBaseName
@@ -283,7 +295,7 @@ if __name__ == '__main__':
             #if targetdir.find(countyfolder) == -1:
             countyparcels = homedir + "\\data\\" + countyfolder + "\\parcels.shp"
             nearParcelsList.append(countyparcels) # might want to rename to parcels_[fip].shp
-        selectDestinations(countyFolderList,"distinationParcels") # may not be needed
+        selectDestinations(countyFolderList,"destinationParcels") # may not be needed
         newgdbfiles = features2gdb(countyFolderList,outdir,geoDataBaseName)
         merged = loadAndMergeCountiesInMetro(targetdir,targetParcels,newgdbfiles)
         arcpy.env.workspace = targetdir
@@ -295,7 +307,7 @@ if __name__ == '__main__':
         else:
             bufferDestinations("metroOut","destinationsCommercialBufferedHalf",geoDataBaseName)
             scoreParcels(targetFeatureClass,"destinationsCommercialBufferedHalf", outputName, geoDataBaseName)
-        cleanCounties(outdir,countyFolderList)
+        #cleanCounties(outdir,countyFolderList)
     else:
         selectDestinations(nearParcelsList,"distinationParcels")
         logout.write('calling features2gdb'+ '\n')
@@ -304,9 +316,6 @@ if __name__ == '__main__':
         bufferDestinations("distinationParcels","destinationsCommercialBufferedHalf",geoDataBaseName)
         logout.write('calling scoreParcels'+ '\n')
         scoreParcels(targetFeatureClass,"destinationsCommercialBufferedHalf", outputName, geoDataBaseName)
-
-
-
 
 
     #logout.write('calling generateLayers'+ '\n')
