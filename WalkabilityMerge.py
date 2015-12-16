@@ -18,8 +18,7 @@ def selectDestinations(countyFolders,outputName):
     print "selectDestinations"
     #arcpy.env.workspace = arcpy.GetParameterAsText(0)
     Dir = arcpy.env.workspace
-
-    #expression1 = 'NOT "STD_LAND_U" = \'RAPT\' AND NOT "STD_LAND_U" = \'RSFR\' AND NOT "STD_LAND_U" = \'RCON\' AND NOT "STD_LAND_U" = \'RCOO\' AND NOT "STD_LAND_U" = \'RDUP\' AND NOT "STD_LAND_U" = \'RMOB\' AND NOT "STD_LAND_U" = \'RMSC\' AND NOT "STD_LAND_U" = \'RQUA\' AND NOT "STD_LAND_U" = \'RSFR\' AND NOT "STD_LAND_U" = \'RTIM\' AND NOT "STD_LAND_U" = \'RTRI\' AND NOT "STD_LAND_U" = \'RMFD\''
+    '''
     expression1 = 'NOT "STD_LAND_U" LIKE \'R%\' AND NOT "STD_LAND_U" LIKE \'V%\' AND NOT "STD_LAND_U" = \'LUNK\'' \
                   + ' AND NOT "STD_LAND_U" = \' \' AND NOT "STD_LAND_U" = \'MMSC\''\
                   + ' AND NOT "STD_LAND_U" = \'MROA\''
@@ -28,8 +27,14 @@ def selectDestinations(countyFolders,outputName):
     + ' OR "OWNER" LIKE \'% FACILITY %\' OR "OWNER" LIKE \'% COMMUNITY %\'  OR "OWNER" LIKE \'% PLAYGROUND %\' OR "OWNER" LIKE \'% CHURCH %\'  OR "OWNER" LIKE \'% TEMPLE %\'  OR "OWNER" LIKE \'% MOSQUE %\' OR "OWNER" LIKE \'% FOREST %\'  OR "OWNER" LIKE \'% MUNICIPAL %\' OR "OWNER" LIKE \'% UNIVERSITY %\'  OR "OWNER" LIKE \'% DAYCARE %\'' \
     + ' OR "OWNER" LIKE \'% FACILITY\' OR "OWNER" LIKE \'% COMMUNITY\'  OR "OWNER" LIKE \'% PLAYGROUND\' OR "OWNER" LIKE \'% CHURCH\'  OR "OWNER" LIKE \'% TEMPLE%\'  OR "OWNER" LIKE \'% MOSQUE\' OR "OWNER" LIKE \'% FOREST\'  OR "OWNER" LIKE \'% MUNICIPAL\' OR "OWNER" LIKE \'% UNIVERSITY\'  OR "OWNER" LIKE \'% DAYCARE\'' \
     + ' OR "OWNER" LIKE \'FACILITY %\' OR "OWNER" LIKE \'COMMUNITY %\'  OR "OWNER" LIKE \'PLAYGROUND %\' OR "OWNER" LIKE \'CHURCH %\'  OR "OWNER" LIKE \'%TEMPLE %\'  OR "OWNER" LIKE \'MOSQUE %\' OR "OWNER" LIKE \'FOREST %\'  OR "OWNER" LIKE \'MUNICIPAL %\' OR "OWNER" LIKE \'UNIVERSITY %\'  OR "OWNER" LIKE \'DAYCARE %\''
+    '''
+    expression1 = 'NOT "STD_LAND_U" LIKE \'R%\' AND NOT "STD_LAND_U" = \'VRES\' AND NOT "STD_LAND_U" = \'LUNK\'AND NOT "STD_LAND_U" = \' \' AND NOT "STD_LAND_U" = \'MMSC\' AND NOT "STD_LAND_U" = \'MROA\''
+    expression3 = '"IMPR_VALUE" > \'0\''
+    expression2 = '"OWNER" LIKE \'% TOWN %\'  OR "OWNER" LIKE \'% TOWN\'  OR "OWNER" LIKE \'TOWN %\'  OR "OWNER" LIKE \'% COUNTY %\'  OR "OWNER" LIKE \'% COUNTY\'  OR "OWNER" LIKE \'COUNTY %\'  OR "OWNER" LIKE \'% STATE %\'  OR "OWNER" LIKE \'% STATE\'  OR "OWNER" LIKE \'STATE %\'  OR "OWNER" LIKE \'% SCHOOL %\' OR "OWNER" LIKE \'% SCHOOL\'  OR "OWNER" LIKE \'SCHOOL %\'   OR "OWNER" LIKE \'% ELEMENTARY %\'  OR "OWNER" LIKE \'% ELEMENTARY\' OR "OWNER" LIKE \'ELEMENTARY %\'   OR "OWNER" LIKE \'% MIDDLE %\' OR "OWNER" LIKE \'% MIDDLE\' OR "OWNER" LIKE \'MIDDLE %\'    OR "OWNER" LIKE \'% LIBRARY %\'  OR "OWNER" LIKE \'% LIBRARY\' OR "OWNER" LIKE \'LIBRARY %\'   OR "OWNER" LIKE \'% K8 K12 %\' OR "OWNER" LIKE \'% K8 K12\'  OR "OWNER" LIKE \'K8 K12 %\'   OR "OWNER" LIKE \'% HOSPITAL %\' OR "OWNER" LIKE \'% HOSPITAL\' OR "OWNER" LIKE \'HOSPITAL %\' OR "OWNER" LIKE \'% CIVIC %\' OR "OWNER" LIKE \'% CIVIC\' OR "OWNER" LIKE \'CIVIC %\' OR "OWNER" LIKE \'% FACILITY %\' OR "OWNER" LIKE \'% FACILITY\' OR "OWNER" LIKE \'FACILITY %\' OR "OWNER" LIKE \'% COMMUNITY %\' OR "OWNER" LIKE \'% COMMUNITY\' OR "OWNER" LIKE \'COMMUNITY %\'  OR "OWNER" LIKE \'% CHURCH %\' OR "OWNER" LIKE \'% CHURCH\' OR "OWNER" LIKE \'CHURCH %\' OR "OWNER" LIKE \'% TEMPLE %\' OR "OWNER" LIKE \'% TEMPLE\' OR "OWNER" LIKE \'TEMPLE %\' OR "OWNER" LIKE \'% MOSQUE %\' OR "OWNER" LIKE \'% MOSQUE\' OR "OWNER" LIKE \'MOSQUE %\' OR "OWNER" LIKE \'% MUNICIPAL %\' OR "OWNER" LIKE \'% MUNICIPAL\' OR "OWNER" LIKE \'% MUNICIPAL\' OR "OWNER" LIKE \'MUNICIPAL %\' OR "OWNER" LIKE \'% UNIVERSITY %\'  OR "OWNER" LIKE \'% UNIVERSITY\' OR "OWNER" LIKE \'UNIVERSITY %\'   OR "OWNER" LIKE \'% DAYCARE %\' OR "OWNER" LIKE \'% DAYCARE\' OR "OWNER" LIKE \'DAYCARE %\''
+    expression4= '"OWNER" LIKE \'% PARK %\' OR "OWNER" LIKE \'% PARK\' OR "OWNER" LIKE \'PARK %\'   OR "OWNER" LIKE \'% RECREATION %\'  OR "OWNER" LIKE \'% RECREATION\' OR "OWNER" LIKE \'RECREATION %\' OR "OWNER" LIKE \'% PLAYGROUND %\'  OR "OWNER" LIKE \'% PLAYGROUND\' OR "OWNER" LIKE \'PLAYGROUND %\' OR "OWNER" LIKE \'% FOREST %\'  OR "OWNER" LIKE \'% FOREST\'  OR "OWNER" LIKE \'FOREST %\''
 
     # Within selected features, further select based on a SQL query within the script tool
+
     n = 1
 
     for county in countyFolders:
@@ -38,8 +43,9 @@ def selectDestinations(countyFolders,outputName):
         layername = "destLyr" + str(n)
         arcpy.MakeFeatureLayer_management(str(destination), layername)
         arcpy.SelectLayerByAttribute_management(layername, "NEW_SELECTION", expression1)
-        arcpy.SelectLayerByAttribute_management(layername, "SUBSET_SELECTION", expression2)
-        arcpy.SelectLayerByAttribute_management(layername, "ADD_TO_SELECTION", expression3)
+        arcpy.SelectLayerByAttribute_management(layername, "ADD_TO_SELECTION", expression2)
+        arcpy.SelectLayerByAttribute_management(layername, "SUBSET_SELECTION", expression3)
+        arcpy.SelectLayerByAttribute_management(layername, "ADD_TO_SELECTION", expression4)
         arcpy.CopyFeatures_management(layername, homedir + "\\data\\" + county + "\\" + str(outputName))
         n = n + 1
 
@@ -145,15 +151,17 @@ def scoreParcels(targetFeature,nearFeature, outputName, geoDataBaseName):
     expression = "getScore(!Join_Count!)"
     codeblock = """def getScore(cnt):
     cnt = int(cnt)
-    if cnt <= 40:
+    if cnt <= 10:
+        return 'walk0'
+    if cnt > 10 and cnt < 30:
         return 'walk1'
-    if cnt > 40 and cnt <= 95:
+    if cnt > 30 and cnt <= 80:
         return 'walk2'
-    if cnt > 95 and cnt <= 120:
+    if cnt > 80 and cnt <= 110:
         return 'walk3'
-    if cnt > 120 and cnt <= 140:
+    if cnt > 110 and cnt <= 135:
         return 'walk4'
-    if cnt > 140:
+    if cnt > 135:
         return 'walk5'
     else:
         return 'walk0'"""
@@ -218,12 +226,16 @@ multicounty2maps = False
 logout = None
 geoDataBaseName = "2mapsgdb"
 
+
+justScore = False
+
 if __name__ == '__main__':
+
     today = str(time.time()).split('.')[0]
     filefilename= "logfile_" + today + ".txt"
     logout = open(filefilename,'w')
     logout.write('main'+ '\n')
-    homedir = "C:\\Users\\DKlein\\PycharmProjects\\2Maps"
+    homedir = os.getcwd() #"C:\\Users\\DKlein\\PycharmProjects\\2Maps"
     ouputdir = homedir + "\\output"
     arcpy.env.workspace = ouputdir + "\\" + geoDataBaseName
 
@@ -248,6 +260,13 @@ if __name__ == '__main__':
     creategdb = True
 
     outputName = "walkability"
+
+    workspace = targetdir #+ "/" + geoDataBaseName #"C:/Users/dev/Documents/boundarysolutions/marin/Marin.gdb"
+    geoDataBasePath = targetdir + "/" + geoDataBaseName
+    arcpy.env.workspace = workspace
+    if justScore:
+        scoreParcels(targetFeatureClass,"destinationsCommercialBufferedHalf", outputName, geoDataBaseName)
+        exit()
 
     # SETUP
     if creategdb:
@@ -276,10 +295,6 @@ if __name__ == '__main__':
         #arcpy.CreateFileGDB_management(outdir, geoDataBaseOutput)
 
 
-    workspace = targetdir #+ "/" + geoDataBaseName #"C:/Users/dev/Documents/boundarysolutions/marin/Marin.gdb"
-    geoDataBasePath = targetdir + "/" + geoDataBaseName
-    #geoDataBaseOutputPath = targetdir + "\\" + geoDataBaseOutput
-    arcpy.env.workspace = workspace
     logout.write('calling selectDestinations'+ '\n')
     multicounty2maps = promptWhetherMulticounty()
 
@@ -296,6 +311,7 @@ if __name__ == '__main__':
             countyparcels = homedir + "\\data\\" + countyfolder + "\\parcels.shp"
             nearParcelsList.append(countyparcels) # might want to rename to parcels_[fip].shp
         selectDestinations(countyFolderList,"destinationParcels") # may not be needed
+
         newgdbfiles = features2gdb(countyFolderList,outdir,geoDataBaseName)
         merged = loadAndMergeCountiesInMetro(targetdir,targetParcels,newgdbfiles)
         arcpy.env.workspace = targetdir
@@ -321,3 +337,4 @@ if __name__ == '__main__':
     #logout.write('calling generateLayers'+ '\n')
     #scoreParcelsShape(targetFeatures,nearFeatures, outputName, geoDataBaseName)
     #generateLayers(targetFeatureClass,targetFeatures)
+

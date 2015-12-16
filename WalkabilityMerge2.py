@@ -6,6 +6,8 @@ __author__ = 'dev'
 # Then it bufferes all the destinations
 # Then takes then
 import arcpy,os,sys
+
+
 import time
 from Tkinter import Tk
 from tkFileDialog import askdirectory
@@ -14,11 +16,11 @@ import os
 # Note that if the attribute 'destination' in parcels exist (from maybe RTJoinFor2Maps) that the lengthy
 # queuies in 'selectDestination' can be replaced by simple check of destination attribute
 
-def addFields(countyFolders,fieldname):
+def addFields(countyFolders,fieldname,fieldType):
     workspace = arcpy.env.workspace
     for county in countyFolders:
         arcpy.env.workspace = homedir + "\\data\\" + county
-        arcpy.AddField_management("Parcels.shp", fieldname, "TEXT")
+        arcpy.AddField_management("Parcels.shp", fieldname, fieldType)
     arcpy.env.workspace = workspace
 
 
@@ -55,11 +57,13 @@ def removeFields(countyFolders):
     for county in countyFolders:
         arcpy.env.workspace = homedir + "\\data\\" + county
         #arcpy.env.workspace = homedir + "\\data\\" + fip + "\\" + geoDataBaseName
-    #fcList = arcpy.ListFeatureClasses() #get a list of feature classes
-    #for fc in fcList:  #loop through feature classes
-        fieldList = [f.baseName for f in arcpy.ListFields("Parcels.shp",None,"String")]  #get a list of fields for each feature class
-        rmlist = list(set(fieldList) - set(["IMPR_VALUE","STD_LAND_U","DEST","OWNER","MINX","MAXX","MINY","MAXY"]))
-        arcpy.DeleteField_management("Parcels.shp", rmlist)
+        #fcList = arcpy.ListFeatureClasses() #get a list of feature classes
+        #for fc in fcList:  #loop through feature classes
+        #fieldList = [f.baseName for f in arcpy.ListFields("Parcels.shp",None,"String")]  #get a list of fields for each feature class
+        #rmlist = list(set(fieldList) - set(["IMPR_VALUE","STD_LAND_U","DEST","OWNER","MINX","MAXX","MINY","MAXY"]))
+        # Process: Delete Field
+        arcpy.DeleteField_management("Parcels.shp", "APN2;STATE;COUNTY;FIPS;SIT_HSE_NU;SIT_DIR;SIT_STR_NA;SIT_STR_SF;SIT_FULL_S;SIT_CITY;SIT_STATE;SIT_ZIP;SIT_ZIP4;SIT_POST;LAND_VALUE;TOT_VALUE;ASSMT_YEAR;MKT_LAND_V;MKT_IMPR_V;TOT_MKT_VA;MKT_VAL_YR;REC_DATE;SALES_PRIC;SALES_CODE;YEAR_BUILT;CONST_TYPE;LOT_SIZE;NO_OF_STOR;NO_OF_UNIT;BEDROOMS;BATHROOMS;OWNADDRES2;OWNCTYSTZP")
+        #arcpy.DeleteField_management("Parcels.shp", rmlist)
 
 def trim2MinFields(fc,geoDataBaseName):
     #arcpy.env.workspace = homedir + "\\data\\" + fip + "\\" + geoDataBaseName
@@ -153,13 +157,21 @@ def scoreParcels(targetFeature,nearFeature, outputName, geoDataBaseName):
     targetFeature = targetFeature # + "_shp"
     nearFeature = nearFeature
     print "scoreParcels"
-    #arcpy.SpatialJoin_analysis("multiresidence", "commercialBufferedHalf", "multiresdencescore")
-    arcpy.SpatialJoin_analysis(targetdir + "\\" + geoDataBaseName + "\\" + targetFeature, targetdir + "\\" + geoDataBaseName + "\\" +nearFeature, "targetFeatureScored")
+    #;UNIT_COUNT_1 \"UNIT_COUNT_1\" true true false 4 Long 0 0 ,Sum,#,destinationsCommercialBufferedHalf,UNIT_COUNT,-1,-1
+
+    Parcels = "Parcels"
+    #destinationsCommercialBufferedHalf = "destinationsCommercialBufferedHalf"
+    #targetFeatureScored = "C:\\Users\\DKlein\\Documents\\ArcGIS\\Default.gdb\\targetFeatureScored"
+
+    # Process: Spatial Join
+    arcpy.SpatialJoin_analysis(targetdir + "\\" + geoDataBaseName + "\\" + targetFeature, targetdir + "\\" + geoDataBaseName + "\\" +nearFeature, "targetFeatureScored", "JOIN_ONE_TO_ONE", "KEEP_COMMON", "APN \"APN\" true true false 50 Text 0 0 ,First,#,Parcels,APN,-1,-1;APN2 \"APN2\" true true false 50 Text 0 0 ,First,#,Parcels,APN2,-1,-1;IMPR_VALUE \"IMPR_VALUE\" true true false 15 Text 0 0 ,First,#,Parcels,IMPR_VALUE,-1,-1;BLDG_AREA \"BLDG_AREA\" true true false 15 Text 0 0 ,First,#,Parcels,BLDG_AREA,-1,-1;UNIT_COUNT \"UNIT_COUNT\" true true false 4 Long 0 0 ,First,#,Parcels,UNIT_COUNT,-1,-1;UNIT_COUNT_1 \"UNIT_COUNT_1\" true true false 4 Long 0 0 ,Sum,#,destinationsCommercialBufferedHalf,UNIT_COUNT,-1,-1", "INTERSECT", "", "")
+
+    #arcpy.SpatialJoin_analysis(targetdir + "\\" + geoDataBaseName + "\\" + targetFeature, targetdir + "\\" + geoDataBaseName + "\\" +nearFeature, "targetFeatureScored", "JOIN_ONE_TO_ONE", "KEEP_ALL","UNIT_COUNT \"UNIT_COUNT\" true true false 5 Short 0 5 ,Sum,#,destinationsCommercialBufferedHalf,UNIT_COUNT,-1,-1")
     arcpy.FeatureClassToGeodatabase_conversion(targetdir + "\\" +"targetFeatureScored.shp", geoDataBaseName)
     arcpy.AddField_management(targetdir + "\\" + geoDataBaseName + "\\targetFeatureScored", "walkable", "TEXT")
-    expression = "getScore(!Join_Count!)"
+    expression = "getScore(!UNIT_COUNT_1!)"  # this is sum of unit counts of destinatios in join intersection
     codeblock = """def getScore(cnt):
-    cnt = int(cnt)
+    cnt = cnt
     if cnt <= 31:
         return 'walk1'
     if cnt > 31 and cnt <= 60:
@@ -228,6 +240,27 @@ def cleanCounties(outdir,counties):
         os.remove(outdir + "\\walk2.gdb")
         #os.remove(outdir + "\\walkability.gdb")
 
+#if use_code.find('c') == 1:
+
+
+def computeDestinationWeight(counties):
+    # Process: Calculate Field
+    expression = "computeUnitCount(!BLDG_AREA!, !NO_OF_UNIT! , !STD_LAND_U! )"  # this is sum of unit counts of destinatios in join intersection
+    codeblock = """def computeUnitCount(bldg_area, no_units, use_code):
+    units = 1
+    try:
+        no_of_units = int(no_units)
+        units = int(math.ceil( float(bldg_area) /10000))
+        if no_of_units > units:
+            units = no_of_units
+    except:
+        units = 1
+    return units"""
+    for countyfolder in counties:
+        arcpy.env.workspace = homedir + "\\data\\" + str(countyfolder)
+        #arcpy.CalculateField_management("Parcels.shp", "UNIT_COUNT", "computeUnitCount(!BLDG_AREA!, !NO_OF_UNIT! , !STD_LAND_U! )", "PYTHON", "def computeUnitCount(bldg_area, no_units, use_code):\\n    units = 1\\n    if use_code.find(\'c\') == 1:\\n        units = math.ceil( bldg_area /10000)\\n        if  no_units > units:\\n            units = no_units\\n    return units\\n")
+        arcpy.CalculateField_management("Parcels.shp", "UNIT_COUNT", expression, "PYTHON_9.3", codeblock)
+
 
 multicounty2maps = False
 logout = None
@@ -238,7 +271,7 @@ if __name__ == '__main__':
     filefilename= "logfile_" + today + ".txt"
     logout = open(filefilename,'w')
     logout.write('main'+ '\n')
-    homedir = "C:\\Users\\DKlein\\PycharmProjects\\2Maps"
+    homedir = "C:\\Users\\rbjork\\PycharmProjects\\2Maps"
     ouputdir = homedir + "\\output"
     arcpy.env.workspace = ouputdir + "\\" + geoDataBaseName
 
@@ -270,9 +303,9 @@ if __name__ == '__main__':
             gdbfiles = os.listdir(outdir + "\\walk2.gdb")
             for gf in gdbfiles:
                 os.remove(outdir + "\\walk2.gdb\\" + gf)
-            gdbfiles2 = os.listdir(outdir + "\\walkability2.gdb")
-            for gf in gdbfiles:
-                os.remove(outdir + "\\walkability2.gdb\\" + gf)
+            #gdbfiles2 = os.listdir(outdir + "\\walkability2.gdb")
+            #for gf in gdbfiles:
+                #os.remove(outdir + "\\walkability2.gdb\\" + gf)
             os.remove(outdir + "\\walk2.gdb")
             #os.remove(outdir + "\\walkability.gdb")
             if os.path.isfile(outdir + "\\destination.prj"):
@@ -309,9 +342,12 @@ if __name__ == '__main__':
             countyparcels = homedir + "\\data\\" + countyfolder + "\\parcels.shp"
             nearParcelsList.append(countyparcels) # might want to rename to parcels_[fip].shp
 
-        #addFields(countyFolderList,"DEST")
+        #addFields(countyFolderList,"DEST","TEXT")   # DONE
+        #addFields(countyFolderList,"UNIT_COUNT","LONG") #DONE
+        computeDestinationWeight(countyFolderList)
+
         #removeFields(countyFolderList)
-        #selectDestinations(countyFolderList,"distinationParcels") # may not be needed
+        selectDestinations(countyFolderList,"distinationParcels") # may not be needed
 
         newgdbfiles = features2gdb(countyFolderList,outdir,geoDataBaseName)
 
