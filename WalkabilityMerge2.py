@@ -115,6 +115,7 @@ def bufferDestinations(destinations,bufferedName, geoDataBaseName):
     arcpy.Buffer_analysis( targetdir + "\\" + geoDataBaseName + "\\" + destinations, targetdir + "\\" + geoDataBaseName + "\\" + bufferedName, "2640 Feet")
 
 def scoreParcelsShape(targetFeature,nearFeature, outputName, geoDataBaseName):
+
     fcnear = nearFeature + "_shp" #'c:/data/base.gdb/well'
     fctarget = targetFeature + "_shp"
     arcpy.env.workspace = homedir + "\\" + geoDataBaseName
@@ -157,19 +158,28 @@ def scoreParcels(targetFeature,nearFeature, outputName, geoDataBaseName):
     targetFeature = targetFeature # + "_shp"
     nearFeature = nearFeature
     print "scoreParcels"
-    #;UNIT_COUNT_1 \"UNIT_COUNT_1\" true true false 4 Long 0 0 ,Sum,#,destinationsCommercialBufferedHalf,UNIT_COUNT,-1,-1
+    #;UNIT_CNT_1 \"UNIT_CNT_1\" true true false 4 Long 0 0 ,Sum,#,destinationsCommercialBufferedHalf,UNIT_CNT,-1,-1
 
-    Parcels = "Parcels"
-    #destinationsCommercialBufferedHalf = "destinationsCommercialBufferedHalf"
-    #targetFeatureScored = "C:\\Users\\DKlein\\Documents\\ArcGIS\\Default.gdb\\targetFeatureScored"
+    # Local variables:
+    # Local variables:
+    Parcels = "C:\\Users\\rbjork\\PycharmProjects\\2Maps\\data\\06041\\walk2.gdb\\Parcels"
+    destinationsCommercialBufferedHalf = "C:\\Users\\rbjork\\PycharmProjects\\2Maps\\data\\06041\\walk2.gdb\\destinationsCommercialBufferedHalf"
+    Parcels_SpatialJoin1 = "C:\\Users\\rbjork\\PycharmProjects\\2Maps\\data\\06041\\walk2.gdb\\Parcels_SpatialJoin1"
 
     # Process: Spatial Join
-    arcpy.SpatialJoin_analysis(targetdir + "\\" + geoDataBaseName + "\\" + targetFeature, targetdir + "\\" + geoDataBaseName + "\\" +nearFeature, "targetFeatureScored", "JOIN_ONE_TO_ONE", "KEEP_COMMON", "APN \"APN\" true true false 50 Text 0 0 ,First,#,Parcels,APN,-1,-1;APN2 \"APN2\" true true false 50 Text 0 0 ,First,#,Parcels,APN2,-1,-1;IMPR_VALUE \"IMPR_VALUE\" true true false 15 Text 0 0 ,First,#,Parcels,IMPR_VALUE,-1,-1;BLDG_AREA \"BLDG_AREA\" true true false 15 Text 0 0 ,First,#,Parcels,BLDG_AREA,-1,-1;UNIT_COUNT \"UNIT_COUNT\" true true false 4 Long 0 0 ,First,#,Parcels,UNIT_COUNT,-1,-1;UNIT_COUNT_1 \"UNIT_COUNT_1\" true true false 4 Long 0 0 ,Sum,#,destinationsCommercialBufferedHalf,UNIT_COUNT,-1,-1", "INTERSECT", "", "")
+    # Field Mappings
 
-    #arcpy.SpatialJoin_analysis(targetdir + "\\" + geoDataBaseName + "\\" + targetFeature, targetdir + "\\" + geoDataBaseName + "\\" +nearFeature, "targetFeatureScored", "JOIN_ONE_TO_ONE", "KEEP_ALL","UNIT_COUNT \"UNIT_COUNT\" true true false 5 Short 0 5 ,Sum,#,destinationsCommercialBufferedHalf,UNIT_COUNT,-1,-1")
-    arcpy.FeatureClassToGeodatabase_conversion(targetdir + "\\" +"targetFeatureScored.shp", geoDataBaseName)
-    arcpy.AddField_management(targetdir + "\\" + geoDataBaseName + "\\targetFeatureScored", "walkable", "TEXT")
-    expression = "getScore(!UNIT_COUNT_1!)"  # this is sum of unit counts of destinatios in join intersection
+    fieldmappings = arcpy.FieldMappings()
+    fieldmappings.addTable(Parcels)
+    fieldmappings.addTable(destinationsCommercialBufferedHalf)
+
+    arcpy.SpatialJoin_analysis(Parcels, destinationsCommercialBufferedHalf, Parcels_SpatialJoin1, "JOIN_ONE_TO_ONE", "KEEP_COMMON", "APN \"APN\" true true false 50 Text 0 0 ,First,#,C:\\Users\\rbjork\\PycharmProjects\\2Maps\\data\\06041\\walk2.gdb\\Parcels,APN,-1,-1;BLDG_AREA_1 \"BLDG_AREA_1\" true true false 15 Text 0 0 ,First,#,destinationsCommercialBufferedHalf,BLDG_AREA,-1,-1;UNIT_CNT_1 \"UNIT_CNT_1\" true true false 4 Long 0 0 ,Sum,#,destinationsCommercialBufferedHalf,UNIT_CNT,-1,-1", "INTERSECT", "", "")
+    arcpy.AddField_management(Parcels_SpatialJoin1, "walkable", "TEXT")
+    # Process: Spatial Join
+    #arcpy.SpatialJoin_analysis(targetdir + "\\" + geoDataBaseName + "\\" + targetFeature, targetdir + "\\" + geoDataBaseName + "\\" +nearFeature, "targetFeatureScored", "JOIN_ONE_TO_ONE", "KEEP_COMMON", "APN \"APN\" true true false 50 Text 0 0 ,First,#,Parcels,APN,-1,-1;APN2 \"APN2\" true true false 50 Text 0 0 ,First,#,Parcels,APN2,-1,-1;IMPR_VALUE \"IMPR_VALUE\" true true false 15 Text 0 0 ,First,#,Parcels,IMPR_VALUE,-1,-1;BLDG_AREA \"BLDG_AREA\" true true false 15 Text 0 0 ,First,#,Parcels,BLDG_AREA,-1,-1;UNIT_CNT \"UNIT_CNT\" true true false 4 Long 0 0 ,First,#,Parcels,UNIT_CNT,-1,-1;UNIT_CNT_1 \"UNIT_CNT_1\" true true false 4 Long 0 0 ,Sum,#,destinationsCommercialBufferedHalf,UNIT_CNT,-1,-1", "INTERSECT", "", "")
+    #arcpy.FeatureClassToGeodatabase_conversion(targetdir + "\\" +"targetFeatureScored.shp", geoDataBaseName)
+    #arcpy.AddField_management(targetdir + "\\" + geoDataBaseName + "\\targetFeatureScored", "walkable", "TEXT")
+    expression = "getScore(!UNIT_CNT_1!)"  # this is sum of unit counts of destinatios in join intersection
     codeblock = """def getScore(cnt):
     cnt = cnt
     if cnt <= 31:
@@ -184,7 +194,8 @@ def scoreParcels(targetFeature,nearFeature, outputName, geoDataBaseName):
         return 'walk5'
     else:
         return 'walk0'"""
-    arcpy.CalculateField_management(targetdir + "\\" + geoDataBaseName + "\\targetFeatureScored", "walkable", expression,"PYTHON_9.3",codeblock)
+    arcpy.CalculateField_management(Parcels_SpatialJoin1, "walkable", expression,"PYTHON_9.3",codeblock)
+    #arcpy.CalculateField_management(targetdir + "\\" + geoDataBaseName + "\\targetFeatureScored", "walkable", expression,"PYTHON_9.3",codeblock)
 
 
 # NEW and needs integration
@@ -244,6 +255,7 @@ def cleanCounties(outdir,counties):
 
 
 def computeDestinationWeight(counties):
+    print "computeDestinationWeight"
     # Process: Calculate Field
     expression = "computeUnitCount(!BLDG_AREA!, !NO_OF_UNIT! , !STD_LAND_U! )"  # this is sum of unit counts of destinatios in join intersection
     codeblock = """def computeUnitCount(bldg_area, no_units, use_code):
@@ -258,8 +270,8 @@ def computeDestinationWeight(counties):
     return units"""
     for countyfolder in counties:
         arcpy.env.workspace = homedir + "\\data\\" + str(countyfolder)
-        #arcpy.CalculateField_management("Parcels.shp", "UNIT_COUNT", "computeUnitCount(!BLDG_AREA!, !NO_OF_UNIT! , !STD_LAND_U! )", "PYTHON", "def computeUnitCount(bldg_area, no_units, use_code):\\n    units = 1\\n    if use_code.find(\'c\') == 1:\\n        units = math.ceil( bldg_area /10000)\\n        if  no_units > units:\\n            units = no_units\\n    return units\\n")
-        arcpy.CalculateField_management("Parcels.shp", "UNIT_COUNT", expression, "PYTHON_9.3", codeblock)
+        #arcpy.CalculateField_management("Parcels.shp", "UNIT_CNT", "computeUnitCount(!BLDG_AREA!, !NO_OF_UNIT! , !STD_LAND_U! )", "PYTHON", "def computeUnitCount(bldg_area, no_units, use_code):\\n    units = 1\\n    if use_code.find(\'c\') == 1:\\n        units = math.ceil( bldg_area /10000)\\n        if  no_units > units:\\n            units = no_units\\n    return units\\n")
+        arcpy.CalculateField_management("Parcels.shp", "UNIT_CNT", expression, "PYTHON_9.3", codeblock)
 
 
 multicounty2maps = False
@@ -271,7 +283,7 @@ if __name__ == '__main__':
     filefilename= "logfile_" + today + ".txt"
     logout = open(filefilename,'w')
     logout.write('main'+ '\n')
-    homedir = "C:\\Users\\rbjork\\PycharmProjects\\2Maps"
+    homedir = os.getcwd() #"C:\\Users\\rbjork\\PycharmProjects\\2Maps"
     ouputdir = homedir + "\\output"
     arcpy.env.workspace = ouputdir + "\\" + geoDataBaseName
 
@@ -343,7 +355,7 @@ if __name__ == '__main__':
             nearParcelsList.append(countyparcels) # might want to rename to parcels_[fip].shp
 
         #addFields(countyFolderList,"DEST","TEXT")   # DONE
-        #addFields(countyFolderList,"UNIT_COUNT","LONG") #DONE
+        #addFields(countyFolderList,"UNIT_CNT","LONG") #DONE
         computeDestinationWeight(countyFolderList)
 
         #removeFields(countyFolderList)
