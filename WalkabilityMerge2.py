@@ -7,7 +7,6 @@ __author__ = 'dev'
 # Then takes then
 import arcpy,os,sys
 
-
 import time
 from Tkinter import Tk
 from tkFileDialog import askdirectory
@@ -62,7 +61,7 @@ def removeFields(countyFolders):
         #fieldList = [f.baseName for f in arcpy.ListFields("Parcels.shp",None,"String")]  #get a list of fields for each feature class
         #rmlist = list(set(fieldList) - set(["IMPR_VALUE","STD_LAND_U","DEST","OWNER","MINX","MAXX","MINY","MAXY"]))
         # Process: Delete Field
-        arcpy.DeleteField_management("Parcels.shp", "APN2;STATE;COUNTY;FIPS;SIT_HSE_NU;SIT_DIR;SIT_STR_NA;SIT_STR_SF;SIT_FULL_S;SIT_CITY;SIT_STATE;SIT_ZIP;SIT_ZIP4;SIT_POST;LAND_VALUE;TOT_VALUE;ASSMT_YEAR;MKT_LAND_V;MKT_IMPR_V;TOT_MKT_VA;MKT_VAL_YR;REC_DATE;SALES_PRIC;SALES_CODE;YEAR_BUILT;CONST_TYPE;LOT_SIZE;NO_OF_STOR;NO_OF_UNIT;BEDROOMS;BATHROOMS;OWNADDRES2;OWNCTYSTZP")
+        arcpy.DeleteField_management("Parcels.shp", "APN2;STATE;COUNTY;FIPS;SIT_HSE_NU;SIT_DIR;SIT_STR_NA;SIT_STR_SF;SIT_FULL_S;SIT_CITY;SIT_STATE;SIT_ZIP;SIT_ZIP4;SIT_POST;LAND_VALUE;TOT_VALUE;ASSMT_YEAR;MKT_LAND_V;MKT_IMPR_V;TOT_MKT_VA;MKT_VAL_YR;REC_DATE;SALES_PRIC;SALES_CODE;YEAR_BUILT;CONST_TYPE;BEDROOMS;BATHROOMS;OWNADDRES2;OWNCTYSTZP")
         #arcpy.DeleteField_management("Parcels.shp", rmlist)
 
 def trim2MinFields(fc,geoDataBaseName):
@@ -175,27 +174,36 @@ def scoreParcels(targetFeature, nearFeature, outputName, geoDataBaseName):
     arcpy.env.workspace = 'C:\\Users\\rbjork\\PycharmProjects\\2Maps\\data\\06041\\walk2.gdb'
 
     in_file1 = 'Parcels'
+               #destinationsCommercialBufferedHalf
     in_file2 = 'destinationsCommercialBufferedHalf'
     output_file = 'Parcels_SpatialJoin1'
 
     fms = arcpy.FieldMappings()
-    fm_parcels = arcpy.FieldMap()
-    fm_destinations = arcpy.FieldMap()
+    fm_parcels1 = arcpy.FieldMap()
+    fm_parcels2 = arcpy.FieldMap()
+    fm_destinations1 = arcpy.FieldMap()
 
     # Add fields to their corresponding FieldMap objects
     apn_field = "APN"
-    fm_parcels.addInputField(in_file1, apn_field)
+    fm_parcels1.addInputField(in_file1, apn_field)
+
     landuse_field = "STD_LAND_U"
-    fm_destinations.addInputField(in_file1, landuse_field)
+    fm_parcels2.addInputField(in_file1, landuse_field)
 
     unit_cnt_field = "UNIT_CNT"
-    fm_destinations.addInputField(in_file2, unit_cnt_field)
+    fm_destinations1.addInputField(in_file2, unit_cnt_field)
 
+    fm_destinations1.mergeRule = 'Sum'
 
-    fm_destinations.mergeRule = 'Sum'
+    f_name = fm_destinations1.outputField
+    f_name.name = 'UNIT_CNT_SUM'
+    f_name.aliasName = 'UNIT_CNT_SUM'
+    fm_destinations1.outputField = f_name
 
-    fms.addFieldMap(fm_parcels)
-    fms.addFieldMap(fm_destinations)
+    fms.addFieldMap(fm_parcels1)
+    fms.addFieldMap(fm_parcels2)
+    fms.addFieldMap(fm_destinations1)
+    #KEEP_COMMON
     arcpy.SpatialJoin_analysis(in_file1, in_file2, output_file, "JOIN_ONE_TO_ONE", "KEEP_COMMON",fms , "INTERSECT", "", "")
     #arcpy.SpatialJoin_analysis(parcel_layer, destinations_layer, Parcels_SpatialJoin1, "JOIN_ONE_TO_ONE", "KEEP_COMMON", "APN \"APN\" true true false 50 Text 0 0 ,First,#,C:\\Users\\rbjork\\PycharmProjects\\2Maps\\data\\06041\\walk2.gdb\\Parcels,APN,-1,-1;BLDG_AREA_1 \"BLDG_AREA_1\" true true false 15 Text 0 0 ,First,#,destinationsCommercialBufferedHalf,BLDG_AREA,-1,-1;UNIT_CNT \"UNIT_CNT\" true true false 4 Long 0 0 ,Sum,#,destinationsCommercialBufferedHalf,UNIT_CNT,-1,-1", "INTERSECT", "", "")
     #arcpy.SpatialJoin_analysis(Parcels, destinationsCommercialBufferedHalf, Parcels_SpatialJoin1, "JOIN_ONE_TO_ONE", "KEEP_COMMON", "APN \"APN\" true true false 50 Text 0 0 ,First,#,C:\\Users\\rbjork\\PycharmProjects\\2Maps\\data\\06041\\walk2.gdb\\Parcels,APN,-1,-1;BLDG_AREA_1 \"BLDG_AREA_1\" true true false 15 Text 0 0 ,First,#,destinationsCommercialBufferedHalf,BLDG_AREA,-1,-1;UNIT_CNT_1 \"UNIT_CNT_1\" true true false 4 Long 0 0 ,Sum,#,destinationsCommercialBufferedHalf,UNIT_CNT,-1,-1", "INTERSECT", "", "")
@@ -204,9 +212,8 @@ def scoreParcels(targetFeature, nearFeature, outputName, geoDataBaseName):
     #arcpy.SpatialJoin_analysis(targetdir + "\\" + geoDataBaseName + "\\" + targetFeature, targetdir + "\\" + geoDataBaseName + "\\" +nearFeature, "targetFeatureScored", "JOIN_ONE_TO_ONE", "KEEP_COMMON", "APN \"APN\" true true false 50 Text 0 0 ,First,#,Parcels,APN,-1,-1;APN2 \"APN2\" true true false 50 Text 0 0 ,First,#,Parcels,APN2,-1,-1;IMPR_VALUE \"IMPR_VALUE\" true true false 15 Text 0 0 ,First,#,Parcels,IMPR_VALUE,-1,-1;BLDG_AREA \"BLDG_AREA\" true true false 15 Text 0 0 ,First,#,Parcels,BLDG_AREA,-1,-1;UNIT_CNT \"UNIT_CNT\" true true false 4 Long 0 0 ,First,#,Parcels,UNIT_CNT,-1,-1;UNIT_CNT_1 \"UNIT_CNT_1\" true true false 4 Long 0 0 ,Sum,#,destinationsCommercialBufferedHalf,UNIT_CNT,-1,-1", "INTERSECT", "", "")
     #arcpy.FeatureClassToGeodatabase_conversion(targetdir + "\\" +"targetFeatureScored.shp", geoDataBaseName)
     #arcpy.AddField_management(targetdir + "\\" + geoDataBaseName + "\\targetFeatureScored", "walkable", "TEXT")
-    expression = "getScore(!UNIT_CNT!)"  # this is sum of unit counts of destinatios in join intersection
+    expression = "getScore(!UNIT_CNT_SUM!)"  # this is sum of unit counts of destinatios in join intersection
     codeblock = """def getScore(cnt):
-    cnt = cnt
     if cnt <= 60:
         return 'walk1'
     if cnt > 60 and cnt <= 180:
