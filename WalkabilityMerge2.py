@@ -300,6 +300,8 @@ def computeDestinationWeight(counties,featureName):
             unitsbyarea = int(math.ceil(float(bldg_area)/10000))
             if unitsbyarea > units:
                 units = unitsbyarea
+            if units > 10:
+                units = 10
     except:
         units = 1
     return units"""
