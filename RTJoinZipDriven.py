@@ -59,7 +59,7 @@ def unzipfile(fipsZip,fipsPath):
     listinfo = None
     with zipfile.ZipFile(zippath + fipsZip,'r',zipfile.ZIP_DEFLATED) as zip:
         listinfo = zip.infolist()
-        zip.extractall(fipsPath)
+        zip.extractall()
     os.remove(zippath + fipsZip)
     infoLargest = None
     largestSize = 0
@@ -150,6 +150,7 @@ def csv2Shape(csvfileinput,shpfile,dbfoutfile,shxfile,dirpath):
             w.saveShp(path+shpfile)
         #   w.saveDbf(path+dbfoutfile)
             w.saveShx(path+shxfile)
+
             maxStringLength = 50
             w.field('name','C',maxStringLength)
         #   for point ,otherdata in zip(pointgeoms, dataFields):
@@ -387,16 +388,20 @@ def getRTFHead(fip):
     newtxtlist = []
 
     for t in txtlist:
+        t = t.strip()
         label = t.split("\t")
         if re.search("MAJOR METRO",t):
             continue
         if re.search("VERSION DATE",t):
             continue
         if re.search("METADATA PROFILE RECORD",t):
-            newtxtlist.append(t)
+            tlen = 35 - len(t)/2
+            if tlen < 0:
+                tlen = 0
+            newtxtlist.append(margin[:tlen]+t)
             continue
         tlen = len(label[0]) - 1
-        if tlen < 40:
+        if tlen < 35:
             t2 = margin[tlen:] + t
         else:
             t2 = "\t"+ t
@@ -502,6 +507,15 @@ if __name__ == '__main__':
     zippath = file_directory + "\\"
     os.chdir(homedir)
     arcpy.env.workspace = homedir
+    # TEST
+    os.chdir(homedir)
+    headtxt = getRTFHead("06041")
+    print headtxt
+    writeMetaFile("06041",100, [], headtxt, today)
+    exit()
+    #TEST
+
+
     onlyfiles = os.listdir(file_directory)
     print onlyfiles
 
@@ -551,8 +565,7 @@ if __name__ == '__main__':
 
                 creationDate = unzipfile(filezip,dir)
                 #print creationDate
-
-                # Create directory for generated shape files from csv
+                #Create directory for generated shape files from csv
                 if os.path.isdir(shppath + dir) == False:
                     os.mkdir(shppath + dir)
                 if os.path.isdir(gdbpath+gdb) == False:
