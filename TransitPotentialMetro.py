@@ -115,7 +115,7 @@ def promptForFoldersForMetro():
 # 12/9/2015 Builds parcels for county geo database
 def countyParcels2gdb(countyfolder,geodbname):
     outWorkspace = homedir + "\\data\\" + str(countyfolder) + "\\" + geodbname
-    arcpy.env.workspace = homedir + "\\data\\" + str(countyfolder) + "\\" + str(countyfolder)
+    arcpy.env.workspace = homedir + "\\data\\" + str(countyfolder) # + "\\" + str(countyfolder)
     for fc in arcpy.ListFeatureClasses():
         if str(fc) == "Parcels.shp":
             # Process: Delete Field
